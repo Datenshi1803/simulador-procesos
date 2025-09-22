@@ -284,13 +284,6 @@ python -m pytest tests/ --cov=src
 - ✅ **Tests unitarios** para garantizar calidad
 - ✅ **Argumentos de línea de comandos** para configuración
 
-## 🔄 Mejoras Implementadas
-
-### **Problema de Selección SOLUCIONADO**
-- ✅ **Antes**: No se podía seleccionar procesos padre para crear hijos
-- ✅ **Ahora**: Hacer clic en cualquier fila de la tabla selecciona el proceso
-- ✅ **Feedback visual**: El panel muestra "Seleccionado: PID X (Nombre)"
-- ✅ **Botones inteligentes**: Se habilitan/deshabilitan según la selección
 
 ### **Arquitectura Profesional**
 - ✅ **Modularización completa**: Código organizado en módulos especializados
