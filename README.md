@@ -158,7 +158,7 @@ Estadísticas en tiempo real:
 2. Observar cómo los procesos se turnan en estado RUNNING
 3. Cambiar el quantum a 1 y ver preempciones más frecuentes
 
-### **Experimento 2: Gestión de Zombies (ARREGLADO)**
+### **Experimento 2: Gestión de Zombies**
 1. Pausar la simulación
 2. Crear un proceso padre: "Crear Proceso"
 3. **Hacer clic en la fila del proceso padre en la tabla**
