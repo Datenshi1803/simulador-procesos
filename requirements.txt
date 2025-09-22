@@ -1,0 +1,12 @@
+# Simulador de Estados de Procesos - Dependencias
+# Python 3.8+ requerido
+
+# Interfaz gráfica moderna
+customtkinter>=5.2.0
+
+# Utilidades opcionales
+colorama>=0.4.6
+
+# Para desarrollo y testing (opcional)
+# pytest>=7.0.0
+# pytest-cov>=4.0.0
