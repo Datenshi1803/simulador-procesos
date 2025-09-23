@@ -216,29 +216,58 @@ class MainWindow:
         # Crear ventana de diálogo para cambiar prioridad
         dialog = ctk.CTkToplevel(self.root)
         dialog.title("Cambiar Prioridad")
-        dialog.geometry("300x200")
+        dialog.geometry("350x280")  # Más alto y más ancho
         dialog.resizable(False, False)
         dialog.transient(self.root)
         dialog.grab_set()
         
         # Centrar el diálogo
         dialog.update_idletasks()
-        x = (dialog.winfo_screenwidth() // 2) - (300 // 2)
-        y = (dialog.winfo_screenheight() // 2) - (200 // 2)
-        dialog.geometry(f"300x200+{x}+{y}")
+        x = (dialog.winfo_screenwidth() // 2) - (350 // 2)
+        y = (dialog.winfo_screenheight() // 2) - (280 // 2)
+        dialog.geometry(f"350x280+{x}+{y}")
         
-        # Contenido del diálogo
-        ctk.CTkLabel(dialog, text=f"Proceso: {process.name} (PID {pid})", 
-                    font=ctk.CTkFont(weight="bold")).pack(pady=10)
-        ctk.CTkLabel(dialog, text=f"Prioridad actual: {current_priority}").pack(pady=5)
-        ctk.CTkLabel(dialog, text="Nueva prioridad (0=alta, 9=baja):").pack(pady=5)
+        # Contenido del diálogo con mejor espaciado
+        title_label = ctk.CTkLabel(
+            dialog, 
+            text=f"Proceso: {process.name} (PID {pid})", 
+            font=ctk.CTkFont(size=16, weight="bold")
+        )
+        title_label.pack(pady=(20, 10))
+        
+        current_label = ctk.CTkLabel(
+            dialog, 
+            text=f"Prioridad actual: {current_priority}",
+            font=ctk.CTkFont(size=14)
+        )
+        current_label.pack(pady=5)
+        
+        instruction_label = ctk.CTkLabel(
+            dialog, 
+            text="Nueva prioridad (0=máxima, 9=mínima):",
+            font=ctk.CTkFont(size=12)
+        )
+        instruction_label.pack(pady=(10, 5))
+        
+        # Frame para la entrada
+        entry_frame = ctk.CTkFrame(dialog, fg_color="transparent")
+        entry_frame.pack(pady=10)
         
         priority_var = ctk.StringVar(value=str(current_priority))
-        priority_entry = ctk.CTkEntry(dialog, textvariable=priority_var, width=100)
-        priority_entry.pack(pady=10)
+        priority_entry = ctk.CTkEntry(
+            entry_frame, 
+            textvariable=priority_var, 
+            width=120,
+            height=35,
+            font=ctk.CTkFont(size=14),
+            justify="center"
+        )
+        priority_entry.pack()
+        priority_entry.focus_set()  # Foco automático
         
+        # Frame para los botones con mejor espaciado
         button_frame = ctk.CTkFrame(dialog, fg_color="transparent")
-        button_frame.pack(pady=10)
+        button_frame.pack(pady=(20, 15))
         
         def apply_priority():
             try:
@@ -257,8 +286,30 @@ class MainWindow:
             except ValueError:
                 messagebox.showerror("Error", "Ingrese un número válido")
         
-        ctk.CTkButton(button_frame, text="Aplicar", command=apply_priority, width=80).pack(side="left", padx=5)
-        ctk.CTkButton(button_frame, text="Cancelar", command=dialog.destroy, width=80).pack(side="left", padx=5)
+        def on_enter(event):
+            apply_priority()
+        
+        priority_entry.bind('<Return>', on_enter)  # Enter para aplicar
+        
+        apply_button = ctk.CTkButton(
+            button_frame, 
+            text="✅ Aplicar", 
+            command=apply_priority, 
+            width=100,
+            height=32,
+            font=ctk.CTkFont(size=12)
+        )
+        apply_button.pack(side="left", padx=10)
+        
+        cancel_button = ctk.CTkButton(
+            button_frame, 
+            text="❌ Cancelar", 
+            command=dialog.destroy, 
+            width=100,
+            height=32,
+            font=ctk.CTkFont(size=12)
+        )
+        cancel_button.pack(side="left", padx=10)
     
     def _move_new_to_ready(self):
         """Mueve todos los procesos NEW a READY."""

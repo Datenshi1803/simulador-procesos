@@ -315,10 +315,16 @@ class SimulatorEngine:
         """Obtiene las métricas del sistema."""
         total_processes = len(self.process_table)
         running_processes = sum(1 for p in self.process_table.values() if p.state == 'RUNNING')
-        ready_processes = len(self.scheduler.ready_queue)
+        ready_processes = sum(len(queue) for queue in self.scheduler.priority_queues.values())
         blocked_processes = len(self.blocked_list)
         zombie_processes = len(self.zombie_list)
         terminated_processes = sum(1 for p in self.process_table.values() if p.state == 'TERMINATED')
+        
+        # Información de colas de prioridad
+        priority_queues_info = self.scheduler.get_ready_queue_info()
+        priority_info = ", ".join([f"P{p}:{c}" for p, c in sorted(priority_queues_info.items()) if c > 0])
+        if not priority_info:
+            priority_info = "Vacía"
         
         # Calcular CPU utilization
         total_ticks = max(1, self.tick)
@@ -341,6 +347,7 @@ class SimulatorEngine:
             'total_processes': total_processes,
             'running': running_processes,
             'ready': ready_processes,
+            'priority_info': priority_info,
             'blocked': blocked_processes,
             'zombie': zombie_processes,
             'terminated': terminated_processes,
