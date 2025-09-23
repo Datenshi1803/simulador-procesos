@@ -13,6 +13,7 @@ class ActionPanel(ctk.CTkFrame):
         # Callbacks
         self.create_process_callback: Optional[Callable] = None
         self.create_child_callback: Optional[Callable] = None
+        self.change_priority_callback: Optional[Callable] = None
         self.new_to_ready_callback: Optional[Callable] = None
         self.force_block_callback: Optional[Callable] = None
         self.force_terminate_callback: Optional[Callable] = None
@@ -27,126 +28,145 @@ class ActionPanel(ctk.CTkFrame):
     
     def _setup_ui(self):
         """Configura la interfaz de usuario."""
-        # Título
+        # Título - más compacto
         title_label = ctk.CTkLabel(
             self, 
             text="⚙️ Acciones", 
-            font=ctk.CTkFont(size=16, weight="bold")
+            font=ctk.CTkFont(size=14, weight="bold")
         )
-        title_label.pack(pady=(10, 15))
+        title_label.pack(pady=(8, 8))
         
-        # Label de proceso seleccionado
+        # Label de proceso seleccionado - más compacto
         self.selection_label = ctk.CTkLabel(
             self,
             text="Selecciona un proceso",
-            font=ctk.CTkFont(size=12),
+            font=ctk.CTkFont(size=10),
             text_color="gray"
         )
-        self.selection_label.pack(pady=(0, 10))
+        self.selection_label.pack(pady=(0, 8))
         
-        # Frame de botones
+        # Frame de botones - más compacto
         buttons_frame = ctk.CTkFrame(self, fg_color="transparent")
-        buttons_frame.pack(fill="both", expand=True, padx=10)
+        buttons_frame.pack(fill="both", expand=True, padx=6)
         
-        # Botones de creación
+        # Botones de creación - más pequeños
         create_frame = ctk.CTkFrame(buttons_frame, fg_color="transparent")
-        create_frame.pack(fill="x", pady=5)
+        create_frame.pack(fill="x", pady=3)
         
         self.create_button = ctk.CTkButton(
             create_frame,
             text="➕ Crear Proceso",
             command=self._on_create_process,
-            width=140,
-            height=35
+            width=115,  # Más estrecho
+            height=26,  # Más bajo
+            font=ctk.CTkFont(size=9)
         )
-        self.create_button.pack(pady=2)
+        self.create_button.pack(pady=1)
         
         self.create_child_button = ctk.CTkButton(
             create_frame,
             text="👶 Crear Hijo",
             command=self._on_create_child,
-            width=140,
-            height=35,
+            width=115,  # Más estrecho
+            height=26,  # Más bajo
+            font=ctk.CTkFont(size=9),
             state="disabled"
         )
-        self.create_child_button.pack(pady=2)
+        self.create_child_button.pack(pady=1)
         
-        # Separador
-        separator1 = ctk.CTkFrame(buttons_frame, height=2, fg_color="gray")
-        separator1.pack(fill="x", pady=10)
+        self.priority_button = ctk.CTkButton(
+            create_frame,
+            text="🎯 Cambiar Prioridad",
+            command=self._on_change_priority,
+            width=115,
+            height=26,
+            font=ctk.CTkFont(size=9),
+            state="disabled"
+        )
+        self.priority_button.pack(pady=1)
         
-        # Botones de transición
+        # Separador - más pequeño
+        separator1 = ctk.CTkFrame(buttons_frame, height=1, fg_color="gray")
+        separator1.pack(fill="x", pady=6)
+        
+        # Botones de transición - más compactos
         transition_frame = ctk.CTkFrame(buttons_frame, fg_color="transparent")
-        transition_frame.pack(fill="x", pady=5)
+        transition_frame.pack(fill="x", pady=3)
         
         self.new_to_ready_button = ctk.CTkButton(
             transition_frame,
             text="🔄 NEW → READY",
             command=self._on_new_to_ready,
-            width=140,
-            height=35
+            width=115,  # Más estrecho
+            height=26,  # Más bajo
+            font=ctk.CTkFont(size=9)
         )
-        self.new_to_ready_button.pack(pady=2)
+        self.new_to_ready_button.pack(pady=1)
         
-        # Botones de forzado
+        # Botones de forzado - más compactos
         force_frame = ctk.CTkFrame(buttons_frame, fg_color="transparent")
-        force_frame.pack(fill="x", pady=5)
+        force_frame.pack(fill="x", pady=3)
         
         self.force_block_button = ctk.CTkButton(
             force_frame,
             text="⏸ Forzar Bloqueo",
             command=self._on_force_block,
-            width=140,
-            height=35,
+            width=115,  # Más estrecho
+            height=26,  # Más bajo
+            font=ctk.CTkFont(size=9),
             state="disabled"
         )
-        self.force_block_button.pack(pady=2)
+        self.force_block_button.pack(pady=1)
         
         self.force_terminate_button = ctk.CTkButton(
             force_frame,
             text="❌ Forzar Terminar",
             command=self._on_force_terminate,
-            width=140,
-            height=35,
+            width=115,  # Más estrecho
+            height=26,  # Más bajo
+            font=ctk.CTkFont(size=9),
             state="disabled"
         )
-        self.force_terminate_button.pack(pady=2)
+        self.force_terminate_button.pack(pady=1)
         
-        # Separador
-        separator2 = ctk.CTkFrame(buttons_frame, height=2, fg_color="gray")
-        separator2.pack(fill="x", pady=10)
+        # Separador - más pequeño
+        separator2 = ctk.CTkFrame(buttons_frame, height=1, fg_color="gray")
+        separator2.pack(fill="x", pady=6)
         
-        # Botones de gestión
+        # Botones de gestión - más compactos
         management_frame = ctk.CTkFrame(buttons_frame, fg_color="transparent")
-        management_frame.pack(fill="x", pady=5)
+        management_frame.pack(fill="x", pady=3)
         
         self.wait_button = ctk.CTkButton(
             management_frame,
             text="⏳ Wait (Reap)",
             command=self._on_wait_reap,
-            width=140,
-            height=35,
+            width=115,  # Más estrecho
+            height=26,  # Más bajo
+            font=ctk.CTkFont(size=9),
             state="disabled"
         )
-        self.wait_button.pack(pady=2)
+        self.wait_button.pack(pady=1)
         
         self.tree_button = ctk.CTkButton(
             management_frame,
             text="🌳 Ver Árbol",
             command=self._on_show_tree,
-            width=140,
-            height=35
+            width=115,  # Más estrecho
+            height=26,  # Más bajo
+            font=ctk.CTkFont(size=9)
         )
-        self.tree_button.pack(pady=2)
+        self.tree_button.pack(pady=1)
         
         self.tick_button = ctk.CTkButton(
             management_frame,
             text="⚡ Tick Manual",
             command=self._on_tick_manual,
-            width=140,
-            height=35
+            width=115,  # Más estrecho
+            height=26,  # Más bajo
+            font=ctk.CTkFont(size=9)
         )
-        self.tick_button.pack(pady=2)
+        self.tick_button.pack(pady=1)
     
     def update_selection(self, pid: Optional[int], process_name: str = None):
         """Actualiza la selección actual."""
@@ -160,6 +180,7 @@ class ActionPanel(ctk.CTkFrame):
             
             # Habilitar botones que requieren selección
             self.create_child_button.configure(state="normal")
+            self.priority_button.configure(state="normal")
             self.force_block_button.configure(state="normal")
             self.force_terminate_button.configure(state="normal")
             self.wait_button.configure(state="normal")
@@ -171,6 +192,7 @@ class ActionPanel(ctk.CTkFrame):
             
             # Deshabilitar botones que requieren selección
             self.create_child_button.configure(state="disabled")
+            self.priority_button.configure(state="disabled")
             self.force_block_button.configure(state="disabled")
             self.force_terminate_button.configure(state="disabled")
             self.wait_button.configure(state="disabled")
@@ -184,6 +206,11 @@ class ActionPanel(ctk.CTkFrame):
         """Maneja la creación de un proceso hijo."""
         if self.create_child_callback and self.selected_pid is not None:
             self.create_child_callback(self.selected_pid)
+    
+    def _on_change_priority(self):
+        """Maneja el cambio de prioridad de un proceso."""
+        if self.change_priority_callback and self.selected_pid is not None:
+            self.change_priority_callback(self.selected_pid)
     
     def _on_new_to_ready(self):
         """Maneja la transición NEW → READY."""
@@ -221,6 +248,9 @@ class ActionPanel(ctk.CTkFrame):
     
     def set_create_child_callback(self, callback: Callable):
         self.create_child_callback = callback
+    
+    def set_change_priority_callback(self, callback: Callable):
+        self.change_priority_callback = callback
     
     def set_new_to_ready_callback(self, callback: Callable):
         self.new_to_ready_callback = callback

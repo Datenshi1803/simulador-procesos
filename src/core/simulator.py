@@ -5,7 +5,7 @@ import random
 from collections import deque
 from typing import Dict, List, Optional, Tuple
 from ..models.process import Process
-from .scheduler import RoundRobinScheduler
+from .scheduler import PriorityScheduler
 
 class SimulatorEngine:
     """Motor de simulación que maneja la lógica de estados de procesos."""
@@ -14,7 +14,7 @@ class SimulatorEngine:
         self.tick = 0
         self.pid_counter = 1
         self.process_table: Dict[int, Process] = {}
-        self.scheduler = RoundRobinScheduler()
+        self.scheduler = PriorityScheduler()
         self.blocked_list = []
         self.zombie_list = []
         
@@ -41,12 +41,13 @@ class SimulatorEngine:
             state="RUNNING",
             total_burst=999999,
             remaining_burst=999999,
+            priority=0,  # Máxima prioridad
             created_tick=0
         )
         self.process_table[0] = init_process
-        self.log_event(f"Proceso init (PID 0) creado")
+        self.log_event(f"Proceso init (PID 0) creado con prioridad máxima")
     
-    def create_process(self, name: str = None, burst: int = None, parent_pid: int = None) -> int:
+    def create_process(self, name: str = None, burst: int = None, parent_pid: int = None, priority: int = None) -> int:
         """Crea un nuevo proceso en estado NEW."""
         pid = self.pid_counter
         self.pid_counter += 1
@@ -55,6 +56,9 @@ class SimulatorEngine:
             name = f"P{pid}"
         if burst is None:
             burst = random.randint(5, 15)
+        if priority is None:
+            # Asignar prioridad aleatoria: 0-2 alta, 3-5 media, 6-8 baja, 9 muy baja
+            priority = random.randint(0, 8)
         
         process = Process(
             pid=pid,
@@ -62,6 +66,7 @@ class SimulatorEngine:
             state='NEW',
             total_burst=burst,
             remaining_burst=burst,
+            priority=priority,
             parent_pid=parent_pid,
             created_tick=self.tick
         )
@@ -72,7 +77,7 @@ class SimulatorEngine:
         if parent_pid and parent_pid in self.process_table:
             self.process_table[parent_pid].children.append(pid)
         
-        self.log_event(f"Proceso {name} (PID {pid}) creado con burst {burst}")
+        self.log_event(f"Proceso {name} (PID {pid}) creado con burst {burst}, prioridad {priority}")
         return pid
     
     def move_new_to_ready(self):
@@ -81,9 +86,9 @@ class SimulatorEngine:
         for pid, process in self.process_table.items():
             if process.state == 'NEW':
                 process.state = 'READY'
-                self.scheduler.add_to_ready(pid)
+                self.scheduler.add_to_ready(pid, self.process_table)
                 moved_count += 1
-                self.log_event(f"Proceso {process.name} (PID {pid}) NEW -> READY")
+                self.log_event(f"Proceso {process.name} (PID {pid}) NEW -> READY (prioridad {process.priority})")
         return moved_count
     
     def force_block_process(self, pid: int, io_time: int = None) -> bool:
@@ -208,13 +213,11 @@ class SimulatorEngine:
                 process = self.process_table[pid]
                 if process.io_remaining > 0:
                     process.io_remaining -= 1
-                    if process.io_remaining == 0:
-                        process.state = 'READY'
-                        self.scheduler.add_to_ready(pid)
-                        unblocked.append(pid)
-                        self.log_event(f"Proceso {process.name} (PID {pid}) desbloqueado -> READY")
-        
-        # Remover de blocked_list
+                if process.io_remaining == 0:
+                    process.state = 'READY'
+                    self.scheduler.add_to_ready(pid, self.process_table)
+                    unblocked.append(pid)
+                    self.log_event(f"Proceso {process.name} (PID {pid}) desbloqueado -> READY (prioridad {process.priority})")        # Remover de blocked_list
         for pid in unblocked:
             self.blocked_list.remove(pid)
     
@@ -247,7 +250,7 @@ class SimulatorEngine:
         
         process = self.process_table[pid]
         self.cpu_busy_ticks += 1
-        self.scheduler.tick()
+        self.scheduler.tick(self.process_table)  # Pasar process_table
         
         # Decrementar burst
         process.remaining_burst -= 1

@@ -50,15 +50,15 @@ class ProcessTable(ctk.CTkFrame):
         style.map("Treeview",
                  background=[('selected', '#1f538d')])
         
-        # Definir columnas
-        columns = ("PID", "Nombre", "Estado", "Restante", "Total", "Padre", 
+        # Definir columnas - agregada columna de Prioridad
+        columns = ("PID", "Nombre", "Estado", "Prioridad", "Restante", "Total", "Padre", 
                   "IO_Rem", "Creado", "Inicio", "Fin", "#Bloq", "#Preempt")
         
         self.tree = ttk.Treeview(table_frame, columns=columns, show="headings", height=12)
         
         # Configurar encabezados
         column_widths = {
-            "PID": 50, "Nombre": 80, "Estado": 90, "Restante": 70, "Total": 60,
+            "PID": 50, "Nombre": 80, "Estado": 90, "Prioridad": 70, "Restante": 70, "Total": 60,
             "Padre": 60, "IO_Rem": 60, "Creado": 60, "Inicio": 60, "Fin": 60,
             "#Bloq": 50, "#Preempt": 70
         }
@@ -126,6 +126,7 @@ class ProcessTable(ctk.CTkFrame):
                 process.pid,
                 process.name,
                 process.state,
+                process.priority,  # Nueva columna de prioridad
                 process.remaining_burst if process.remaining_burst > 0 else "-",
                 process.total_burst,
                 process.parent_pid if process.parent_pid else "-",
@@ -145,8 +146,8 @@ class ProcessTable(ctk.CTkFrame):
             
             # Configurar tags para colores
             tag_name = f"state_{process.state}"
-            if tag_name not in self.tree.tag_names():
-                self.tree.tag_configure(tag_name, background=state_color, foreground='black')
+            # Configurar el tag (si ya existe, simplemente se reconfigura)
+            self.tree.tag_configure(tag_name, background=state_color, foreground='black')
             self.tree.item(item_id, tags=(tag_name,))
     
     def get_selected_pid(self) -> Optional[int]:

@@ -23,8 +23,8 @@ class MainWindow:
         # Crear ventana principal
         self.root = ctk.CTk()
         self.root.title("Simulador de Estados de Procesos — Gestión de Estados")
-        self.root.geometry("1400x800")
-        self.root.minsize(1200, 700)
+        self.root.geometry("1600x900")
+        self.root.minsize(1400, 800)
         
         # Configurar icono (si existe)
         try:
@@ -66,9 +66,9 @@ class MainWindow:
         main_frame = ctk.CTkFrame(self.root)
         main_frame.pack(fill="both", expand=True, padx=10, pady=5)
         
-        # Configurar grid
-        main_frame.grid_columnconfigure(0, weight=3)  # Tabla de procesos
-        main_frame.grid_columnconfigure(1, weight=1)  # Panel derecho
+        # Configurar grid - más espacio para la tabla
+        main_frame.grid_columnconfigure(0, weight=4)  # Tabla de procesos - más espacio
+        main_frame.grid_columnconfigure(1, weight=1)  # Panel derecho - compacto
         main_frame.grid_rowconfigure(0, weight=1)
         
         # Tabla de procesos (izquierda)
@@ -78,7 +78,9 @@ class MainWindow:
         # Panel derecho
         right_panel = ctk.CTkFrame(main_frame)
         right_panel.grid(row=0, column=1, sticky="nsew")
-        right_panel.grid_rowconfigure(1, weight=1)  # Métricas expandibles
+        right_panel.grid_rowconfigure(0, weight=0)  # Panel de acciones - tamaño fijo
+        right_panel.grid_rowconfigure(1, weight=1)  # Métricas - expandible
+        right_panel.grid_columnconfigure(0, weight=1)
         
         # Panel de acciones (arriba derecha)
         self.action_panel = ActionPanel(right_panel)
@@ -105,6 +107,7 @@ class MainWindow:
         # Action panel callbacks
         self.action_panel.set_create_process_callback(self._create_process)
         self.action_panel.set_create_child_callback(self._create_child_process)
+        self.action_panel.set_change_priority_callback(self._change_process_priority)
         self.action_panel.set_new_to_ready_callback(self._move_new_to_ready)
         self.action_panel.set_force_block_callback(self._force_block_process)
         self.action_panel.set_force_terminate_callback(self._force_terminate_process)
@@ -200,6 +203,62 @@ class MainWindow:
             )
         else:
             messagebox.showerror("Error", "Proceso padre no encontrado")
+    
+    def _change_process_priority(self, pid: int):
+        """Cambia la prioridad de un proceso."""
+        if pid not in self.simulator.process_table:
+            messagebox.showerror("Error", "Proceso no encontrado")
+            return
+        
+        process = self.simulator.process_table[pid]
+        current_priority = process.priority
+        
+        # Crear ventana de diálogo para cambiar prioridad
+        dialog = ctk.CTkToplevel(self.root)
+        dialog.title("Cambiar Prioridad")
+        dialog.geometry("300x200")
+        dialog.resizable(False, False)
+        dialog.transient(self.root)
+        dialog.grab_set()
+        
+        # Centrar el diálogo
+        dialog.update_idletasks()
+        x = (dialog.winfo_screenwidth() // 2) - (300 // 2)
+        y = (dialog.winfo_screenheight() // 2) - (200 // 2)
+        dialog.geometry(f"300x200+{x}+{y}")
+        
+        # Contenido del diálogo
+        ctk.CTkLabel(dialog, text=f"Proceso: {process.name} (PID {pid})", 
+                    font=ctk.CTkFont(weight="bold")).pack(pady=10)
+        ctk.CTkLabel(dialog, text=f"Prioridad actual: {current_priority}").pack(pady=5)
+        ctk.CTkLabel(dialog, text="Nueva prioridad (0=alta, 9=baja):").pack(pady=5)
+        
+        priority_var = ctk.StringVar(value=str(current_priority))
+        priority_entry = ctk.CTkEntry(dialog, textvariable=priority_var, width=100)
+        priority_entry.pack(pady=10)
+        
+        button_frame = ctk.CTkFrame(dialog, fg_color="transparent")
+        button_frame.pack(pady=10)
+        
+        def apply_priority():
+            try:
+                new_priority = int(priority_var.get())
+                if 0 <= new_priority <= 9:
+                    old_priority = process.priority
+                    self.simulator.scheduler.adjust_priority(pid, new_priority, self.simulator.process_table)
+                    self._update_display()
+                    dialog.destroy()
+                    messagebox.showinfo(
+                        "Prioridad Cambiada", 
+                        f"Prioridad del proceso {process.name} (PID {pid})\ncambiada de {old_priority} a {new_priority}"
+                    )
+                else:
+                    messagebox.showerror("Error", "La prioridad debe estar entre 0 y 9")
+            except ValueError:
+                messagebox.showerror("Error", "Ingrese un número válido")
+        
+        ctk.CTkButton(button_frame, text="Aplicar", command=apply_priority, width=80).pack(side="left", padx=5)
+        ctk.CTkButton(button_frame, text="Cancelar", command=dialog.destroy, width=80).pack(side="left", padx=5)
     
     def _move_new_to_ready(self):
         """Mueve todos los procesos NEW a READY."""

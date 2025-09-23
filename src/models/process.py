@@ -12,6 +12,7 @@ class Process:
     state: str = 'NEW'
     total_burst: int = 0
     remaining_burst: int = 0
+    priority: int = 0  # Prioridad del proceso (0=más alta, mayor número=menor prioridad)
     parent_pid: Optional[int] = None
     children: List[int] = field(default_factory=list)
     
