@@ -41,9 +41,6 @@ class MainWindow:
         self.speed = 1.0
         self.auto_create_enabled = False
         
-        # Crear 5 procesos iniciales
-        self._create_initial_processes()
-        
         # Configurar UI
         self._setup_ui()
         self._setup_callbacks()
@@ -51,10 +48,11 @@ class MainWindow:
         # Actualizar interfaz inicial
         self._update_display()
     
-    def _create_initial_processes(self):
-        """Crea 5 procesos iniciales como especifica la rúbrica."""
-        for i in range(1, 6):
+    def _create_initial_processes(self, count: int = 5):
+        """Crea procesos iniciales opcionalmente."""
+        for i in range(1, count + 1):
             self.simulator.create_process(f"P{i}")
+        self._update_display()
     
     def _setup_ui(self):
         """Configura la interfaz de usuario."""
@@ -144,7 +142,6 @@ class MainWindow:
             self.auto_thread.join(timeout=1.0)
         
         self.simulator.reset()
-        self._create_initial_processes()
         self._update_display()
         
         # Limpiar selección

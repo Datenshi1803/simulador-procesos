@@ -34,6 +34,8 @@ def main():
         # Modo demo
         if args.demo:
             print("🎮 Iniciando en modo DEMO automático...")
+            # Crear algunos procesos para demostración
+            app._create_initial_processes(3)  # Solo 3 procesos para demo
             app.control_panel.is_auto_mode.set(True)
             app.control_panel.auto_create_enabled.set(True)
             app.auto_create_enabled = True
@@ -42,8 +44,8 @@ def main():
         
         # Ejecutar la aplicación
         print("🚀 Iniciando Simulador de Estados de Procesos...")
-        print("📋 5 procesos iniciales creados (P1-P5)")
-        print("💡 Usa los controles para interactuar con la simulación")
+        print("📋 Sistema inicializado sin procesos")
+        print("💡 Usa el botón 'Crear Proceso' para agregar procesos al sistema")
         
         app.run()
         
